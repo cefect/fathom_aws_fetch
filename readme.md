@@ -140,5 +140,25 @@ gdalinfo --version
 # either update or remove this from the script and try again.
 ```
 
+### archive
+```bash
+out_dir=/home/cefect/LS/10_IO/2407_FHIMP/fathom
+archive_dir=/home/cefect/LS/10_IO/2407_FHIMP/fathom_arch
+
+# clear out empty folders
+find "$out_dir" -type d -empty -delete
+
+# tarball each top-level directory with native tar progress dots and medium zstd compression
+cd "$out_dir"
+echo "archiving each top-level directory in $out_dir to $archive_dir"
+for dir in */; do
+    [ -d "$dir" ] || continue
+    echo "archiving $dir -> $archive_dir/${dir%/}.tar.zst"
+    tar --checkpoint=1000 --checkpoint-action=dot -I 'zstd -5 -T0' \
+      -cf "$archive_dir/${dir%/}.tar.zst" "$dir"
+done
+
+
+
 # See Also
 [titiler](https://github.com/developmentseed/titiler)
