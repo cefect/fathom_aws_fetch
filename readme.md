@@ -1,4 +1,4 @@
-# Fetching Fathom Products from AWS S3
+# Fetching Fathom Global Flood tiles from AWS S3
 Simple scripts for fetching and indexing the global flood map layers from AWS S3.
 
 ![Fathom AWS fetch workflow](img.png)
@@ -41,7 +41,7 @@ aws sts get-caller-identity --query Arn --output text
 
  
 
-## definitive no-access check (WSL)
+## definitive check
 Now try a simple single fetch to test the connection and your credentials.
 ```bash
 export AWS_CONFIG_FILE="$(pwd)/aws_s3.config"
@@ -64,8 +64,17 @@ Those permission errors occur because Fathom stores all data for full global lay
 That means attempting to sync a bucket could result in many noisy permission errors.
 
 
-# Run The Download
+# Download with the fetch scripts
+----------------------------------------------
 Here we use a short bash script to run `aws s3 sync` on the target buckets using the profile and credentials above.
+
+## clone the repo
+```bash
+git clone git@github.com:cefect/fathom_aws_fetch.git
+```
+
+
+## run the script
  
 ```bash
 # make script executable
@@ -100,12 +109,17 @@ Here are some helpers to summarize what you fetched.
 } > fetch_size.tsv
 ```
 
+NOTE: there are no `pluvial-defended` buckets. 
+
 ### Build Tile Index For Each Bucket
 Here we use [gdaltindex](https://gdal.org/en/stable/programs/gdaltindex.html) to build a vector tile index of all the `.tif` tiles from each bucket.
-If you don't have GDAL installed, a quick way (assuming you have conda) is:
+If you don't have GDAL installed, a quick way (assuming you have conda) to install (and activate) is:
 ```bash
 # create a new conda environment with gdal
 conda create -n gdal_basic -c conda-forge gdal libgdal
+
+# activate the environment
+conda activate gdal_basic
  
 ```
 
@@ -122,5 +136,9 @@ gdalinfo --version
 # run it. assumes you exported $out_dir as shown above
 ./build_grid.sh --target-dir "$out_dir"
 
-# if you get an error like `-overwrite is not supported`, you may have an older version of GDAL. either update or remove this from the script and try again.
+# if you get an error like `-overwrite is not supported`, you may have an older version of GDAL. 
+# either update or remove this from the script and try again.
 ```
+
+# See Also
+[titiler](https://github.com/developmentseed/titiler)
