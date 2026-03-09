@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-
+#
+# Build one GDAL tile index per top-level download directory.
+# Usage: build_grid.sh --target-dir <download_dir> [--out-dir <tile_index_dir>]
+#
 # tested against GDAL 3.12.2 "Chicoutimi"
 set -euo pipefail
 

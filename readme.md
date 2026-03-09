@@ -1,21 +1,23 @@
-# Fetching fathom products from AWS S3
+# Fetching Fathom Products from AWS S3
+Simple scripts for fetching and indexing the global flood map layers from AWS S3.
 
+![Fathom AWS fetch workflow](img.png)
 
-# setup (one time)
+# Setup
 
 ## install AWS CLI
-to fetch the aws tiles, ensure [AWS CLI](https://urldefense.com/v3/__https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html__;!!KwNVnqRv!AUQaTXLri175i8wdJakT49wbq0zIK8Zx2hZwpQM28FFtMrc0Vsp5YES7PmwTj0bzYR5-5pZxBBO7kKb8nAObFZU$) is installed. 
-On unix, this typically looks like:
+To fetch the AWS tiles, ensure [AWS CLI](https://urldefense.com/v3/__https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html__;!!KwNVnqRv!AUQaTXLri175i8wdJakT49wbq0zIK8Zx2hZwpQM28FFtMrc0Vsp5YES7PmwTj0bzYR5-5pZxBBO7kKb8nAObFZU$) is installed.
+On Unix, this typically looks like:
 
 ```bash
 sudo apt update
 sudo apt install -y awscli
 ```
 
-## set up AWS credentials 
-probably fathom will provide you a key and an identity. 
+## set up AWS credentials
+Fathom will probably provide you a key and an identity.
 There's a few ways to pass these to AWS. Some safe, some not-so safe.
-Here we use an `~/.aws/credentials` file with a named profile.
+Here, we use an `~/.aws/credentials` file with a named profile.
 
  
 Create `~/.aws/credentials` with a named profile:
@@ -40,7 +42,7 @@ aws sts get-caller-identity --query Arn --output text
  
 
 ## definitive no-access check (WSL)
-now try a simple single fetch to test the connection and your credentials. 
+Now try a simple single fetch to test the connection and your credentials.
 ```bash
 export AWS_CONFIG_FILE="$(pwd)/aws_s3.config"
 export AWS_PROFILE=fathom
@@ -52,19 +54,18 @@ aws sts get-caller-identity --query Arn --output text
 aws s3api get-object \
   --bucket fathom-products-flood \
   --key flood-map-3/FLOOD_MAP-1ARCSEC-NW_OFFSET-1in10-COASTAL-DEFENDED-DEPTH-2020-PERCENTILE50-v3.1/n00e006.tif \
-  /n00e006.tif
+  ./n00e006.tif
 
 ```
 Depending on what you've been granted, you may see an error like:
 `An error occurred (AccessDenied) when calling the GetObject operation: User: arn:aws:iam::288631505212:user/SethBryant is not authorized to perform: s3:GetObject on resource:`
 
-Those permission errors occur because fathom stores all data for full global layers in the same buckets, then provide permissions to tiles that match country boundaries.
-Which means, attempting to sync a bucket could result in many noisy permission errors.
+Those permission errors occur because Fathom stores all data for full global layers in the same buckets, then provides permissions to tiles that match country boundaries.
+That means attempting to sync a bucket could result in many noisy permission errors.
 
 
-# run the download
-----------------------------------------------------------
-Here we use a short bash script to run `aws s3 sync` on the target buckets using the above profile + credentials.
+# Run The Download
+Here we use a short bash script to run `aws s3 sync` on the target buckets using the profile and credentials above.
  
 ```bash
 # make script executable
@@ -78,13 +79,13 @@ export out_dir=download
 
 ```
 
-you should see something like `[1/36] syncing FLOOD_MAP-1ARCSEC-NW_OFFSET-1in50-PLUVIAL-DEFENDED-DEPTH-2020-PERCENTILE50-v3.1`. 
+You should see something like `[1/36] syncing FLOOD_MAP-1ARCSEC-NW_OFFSET-1in50-PLUVIAL-DEFENDED-DEPTH-2020-PERCENTILE50-v3.1`.
 
-## check
-downloading probably results in thousands of tiles.
-Here are some nice helpers to summarize what you fetched. 
+## Check
+Downloading will probably result in thousands of tiles.
+Here are some helpers to summarize what you fetched.
 
-### table of file counts and sizes
+### Table Of File Counts And Sizes
 ```bash
 # assumes you exported $out_dir as shown above
 {
@@ -99,27 +100,27 @@ Here are some nice helpers to summarize what you fetched.
 } > fetch_size.tsv
 ```
 
-### build tile index for each bucket
-here we use [gdaltindex](https://gdal.org/en/stable/programs/gdaltindex.html) to build a vector tile index of all the .tif tiles from each bucket.
-If you dont have gdal installed, a quick way (assuming you have conda) is:
+### Build Tile Index For Each Bucket
+Here we use [gdaltindex](https://gdal.org/en/stable/programs/gdaltindex.html) to build a vector tile index of all the `.tif` tiles from each bucket.
+If you don't have GDAL installed, a quick way (assuming you have conda) is:
 ```bash
 # create a new conda environment with gdal
-`conda create -n gdal_basic -c conda-forge gdal libgdal`
+conda create -n gdal_basic -c conda-forge gdal libgdal
  
 ```
 
 
-These indexes are handy if you want to locate a tile for a specific location. 
+These indexes are handy if you want to locate a tile for a specific location.
 
 ```bash
 # make script executable
 chmod +x build_grid.sh
 
-# check your gdal version. this script was tested against 3.12.2 "Chicoutimi"
+# check your GDAL version. this script was tested against 3.12.2 "Chicoutimi"
 gdalinfo --version
 
 # run it. assumes you exported $out_dir as shown above
 ./build_grid.sh --target-dir "$out_dir"
 
-# if you get an error like `-overwrite is not supported`, you may have an older version of gdal. either update or remove this from teh script and try again.
+# if you get an error like `-overwrite is not supported`, you may have an older version of GDAL. either update or remove this from the script and try again.
 ```

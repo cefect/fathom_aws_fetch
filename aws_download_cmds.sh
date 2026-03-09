@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Sync Fathom flood-map S3 prefixes into a provided output directory.
+# Download the configured Fathom flood-map S3 prefixes into one output directory.
 # Usage: aws_download_cmds.sh <out_dir>
 #
 set -uo pipefail
