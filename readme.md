@@ -152,7 +152,42 @@ gdalinfo --version
 # either update or remove this from the script and try again.
 ```
 
+# tile extract
+extract a single tile from all scenarios by filename:
+```bash
+# change to the output directory 
+cd "/home/cefect/LS/09_REPOS/04_TOOLS/floodsr_fathom/workflow_outdir/00_tiles"
+
+# set the source directory holding the extracted scenario folders
+out_dir="/home/cefect/LS/10_IO/2407_FHIMP/fathom"
+
+# set the tile name you want to extract
+tile_id="n49w124.tif"
+
+# copy matches into the current directory, preserving top-level source folders
+dest_dir="$PWD"
+
+count=$(find "$out_dir" -type f -name "$tile_id" | wc -l)
+printf "found %s matches for %s\n" "$count" "$tile_id"
+
+find "$out_dir" -type f -name "$tile_id" | while read -r fp; do
+  top_dir="$(basename "$(dirname "$fp")")"
+  target_dir="$dest_dir/$top_dir"
+  mkdir -p "$target_dir"
+  printf "copying %s/%s\n" "$top_dir" "$tile_id"
+  cp "$fp" "$target_dir/$tile_id"
+done
+
+find "$dest_dir" -mindepth 2 -maxdepth 2 -type f -name "$tile_id" | wc -l
+
+```
+
+
+
+
 # archive
+
+## create archives
 ```bash
 out_dir=/home/cefect/LS/10_IO/2407_FHIMP/fathom
 archive_dir=/home/cefect/LS/10_IO/2407_FHIMP/fathom_arch
@@ -170,6 +205,22 @@ for dir in */; do
     tar --checkpoint=1000 --checkpoint-action=dot -I 'zstd -5 -T0' \
       -cf "$archive_dir/${dir%/}.tar.zst" "$dir"
 done
+```
+## unpack
+```bash
+# extract each `.tar.zst` archive from `fathom_arch` into the shared output root
+ 
+mkdir -p /home/cefect/LS/10_IO/2407_FHIMP/fathom && \
+count=$(find /home/cefect/LS/10_IO/2407_FHIMP/fathom_arch -maxdepth 1 -type f -name '*.tar.zst' | wc -l) && \
+i=0 && \
+for fp in /home/cefect/LS/10_IO/2407_FHIMP/fathom_arch/*.tar.zst; do
+  i=$((i + 1))
+  printf '[%s/%s] extracting %s\n' "$i" "$count" "$(basename "$fp")"
+  tar --zstd -xf "$fp" -C /home/cefect/LS/10_IO/2407_FHIMP/fathom
+done
+
+ 
+
 ```
 
 
