@@ -99,6 +99,12 @@ Here are some helpers to summarize what you fetched.
 
 ### Table Of File Counts And Sizes
 ```bash
+# totals
+find "$out_dir" -type f | wc -l
+du -sh --block-size=1G "$out_dir"
+
+
+
 # assumes you exported $out_dir as shown above
 {
   printf $'filename\tfilesize_gb\tfile_count\n'
@@ -114,8 +120,11 @@ Here are some helpers to summarize what you fetched.
 
 NOTE: there are no `pluvial-defended` buckets. 
 
-### Build Tile Index For Each Bucket
+# Tile Indexing
+
 Here we use [gdaltindex](https://gdal.org/en/stable/programs/gdaltindex.html) to build a vector tile index of all the `.tif` tiles from each bucket.
+
+## setup
 If you don't have GDAL installed, a quick way (assuming you have conda) to install (and activate) is:
 ```bash
 # create a new conda environment with gdal
@@ -126,7 +135,7 @@ conda activate gdal_basic
  
 ```
 
-
+## Build Tile Index For Each Bucket
 These indexes are handy if you want to locate a tile for a specific location.
 
 ```bash
@@ -143,7 +152,7 @@ gdalinfo --version
 # either update or remove this from the script and try again.
 ```
 
-### archive
+# archive
 ```bash
 out_dir=/home/cefect/LS/10_IO/2407_FHIMP/fathom
 archive_dir=/home/cefect/LS/10_IO/2407_FHIMP/fathom_arch
@@ -152,6 +161,7 @@ archive_dir=/home/cefect/LS/10_IO/2407_FHIMP/fathom_arch
 find "$out_dir" -type d -empty -delete
 
 # tarball each top-level directory with native tar progress dots and medium zstd compression
+# TODO: refactor into standalone and extend for Use tmp output + zstd -tq validation + source-vs-archive mtime check.
 cd "$out_dir"
 echo "archiving each top-level directory in $out_dir to $archive_dir"
 for dir in */; do
@@ -160,7 +170,7 @@ for dir in */; do
     tar --checkpoint=1000 --checkpoint-action=dot -I 'zstd -5 -T0' \
       -cf "$archive_dir/${dir%/}.tar.zst" "$dir"
 done
-
+```
 
 
 # See Also
