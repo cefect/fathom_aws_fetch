@@ -77,11 +77,14 @@ git clone git@github.com:cefect/fathom_aws_fetch.git
 ## run the script
  
 ```bash
+#change into the repo directory
+cd /home/cefect/LS/09_REPOS/04_TOOLS/fathom_aws_fetch/
+
 # make script executable
 chmod +x aws_download_cmds.sh
 
 # set output directory for fetch
-export out_dir=download
+export out_dir="/home/cefect/LS/10_IO/2407_FHIMP/fathom"
 
 # run fetch script and log output
 ./aws_download_cmds.sh "$out_dir"
