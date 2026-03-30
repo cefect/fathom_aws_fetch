@@ -147,10 +147,12 @@ gdalinfo --version
 
 # run it. assumes you exported $out_dir as shown above
 ./build_grid.sh --target-dir "$out_dir"
+ 
 
 # if you get an error like `-overwrite is not supported`, you may have an older version of GDAL. 
 # either update or remove this from the script and try again.
 ```
+this will create a set of .gpkg files (in `./tile_index`) with the same top-level names as the buckets, each containing a vector tile index of all the .tif tiles in that bucket.
 
 # tile extract
 extract a single tile from all scenarios by filename:
